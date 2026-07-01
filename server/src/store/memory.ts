@@ -102,6 +102,27 @@ async function deleteResolvedIssuesOlderThanOneDay() {
   }
 }
 
+export async function ensureDefaultUsers() {
+  if (hasMongoConnection()) {
+    const existingUsers = await UserModel.find().lean<AuthUser[]>().exec();
+    if (existingUsers.length > 0) {
+      return;
+    }
+
+    for (const seedUser of users) {
+      const userWithHash = {
+        ...seedUser,
+        email: seedUser.email.toLowerCase(),
+        passwordHash: seedUser.passwordHash
+      };
+      await UserModel.create(userWithHash);
+    }
+    return;
+  }
+
+  await loadPersistedUsers();
+}
+
 export async function findUserByEmail(email: string): Promise<AuthUser | null> {
   if (hasMongoConnection()) {
     return UserModel.findOne({ email: email.toLowerCase() }).lean<AuthUser>().exec() as Promise<AuthUser | null>;

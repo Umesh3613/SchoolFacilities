@@ -44,7 +44,7 @@ app.use('/api/admin', adminRouter);
 if (clientDistPath && clientIndexPath && fs.existsSync(clientIndexPath)) {
   app.use(express.static(clientDistPath));
 
-  app.get('*', (_request, response) => {
+  app.get(/.*/, (_request, response) => {
     response.sendFile(clientIndexPath);
   });
 } else {

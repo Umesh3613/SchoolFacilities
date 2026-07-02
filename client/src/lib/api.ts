@@ -1,6 +1,34 @@
-const resolvedApiBaseUrl = (import.meta.env.VITE_API_URL ?? '').trim();
+function normalizeApiBaseUrl(value: string) {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return '';
+  }
 
-export const API_BASE_URL = resolvedApiBaseUrl || (typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api');
+  const withoutTrailingSlash = trimmedValue.replace(/\/$/, '');
+  return withoutTrailingSlash.endsWith('/api') ? withoutTrailingSlash : `${withoutTrailingSlash}/api`;
+}
+
+function resolveApiBaseUrl() {
+  const configuredApiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_URL ?? '');
+  if (configuredApiBaseUrl) {
+    return configuredApiBaseUrl;
+  }
+
+  if (typeof window === 'undefined') {
+    return '/api';
+  }
+
+  const { protocol, hostname } = window.location;
+  const isLocalhost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname);
+
+  if (isLocalhost) {
+    return `${protocol}//${hostname}:4000/api`;
+  }
+
+  return `${window.location.origin}/api`;
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export type AuthUser = {
   id: string;

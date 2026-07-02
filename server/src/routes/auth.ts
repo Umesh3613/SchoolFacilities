@@ -44,11 +44,13 @@ authRouter.post('/register', async (request, response) => {
 
 authRouter.post('/login', async (request, response) => {
   const parsed = payloadSchema.pick({ email: true, password: true }).safeParse(request.body);
+  console.log('Parsed login data:', parsed);
   if (!parsed.success) {
     return response.status(400).json({ message: 'Invalid login data' });
   }
-
+  console.log('Parsed login data:', parsed.data);
   const user = await findUserByEmail(parsed.data.email);
+  console.log('Found user:', user);
   if (!user || !bcrypt.compareSync(parsed.data.password, user.passwordHash)) {
     return response.status(401).json({ message: 'Invalid email or password' });
   }
